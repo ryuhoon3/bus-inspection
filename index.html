@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#d0126b" />
+  <meta name="robots" content="noindex" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>버스단말기 현장 점검 가이드</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ["Pretendard", "Malgun Gothic", "Apple SD Gothic Neo", "sans-serif"],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #f4f5f7;
+      color: #1f2937;
+      font-family: Pretendard, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { opacity: 0.55; cursor: wait; }
+    :focus-visible { outline: 3px solid #f3a0c4; outline-offset: 2px; }
+    #topbar { background: #fff; color: #111827; border-bottom: 1px solid #e6e8ee; }
+    .top-wrap { display: flex; justify-content: space-between; gap: 16px; align-items: center; padding: 18px 24px; }
+    .brand-kicker { margin: 0; color: #d0126b; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.08em; }
+    #topbar h1 { margin: 4px 0 0; font-size: 1.45rem; line-height: 1.25; font-weight: 800; color: #111827; }
+    #search-panel, #right-panel { background: transparent; }
+    #search-panel { padding: 16px; }
+    #right-panel { padding: 16px; }
+    #status-pill { display: inline-block; padding: 6px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 800; }
+    #status-pill[data-mode="gemini"] { background: #e8f8ef; color: #157347; }
+    #status-pill[data-mode="manual"] { background: #fde8f1; color: #b01058; }
+    .lbl { display: block; margin: 14px 0 6px; font-size: 0.82rem; font-weight: 700; color: #4b5563; }
+    .field {
+      width: 100%;
+      min-height: 48px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: #fafafa;
+      color: #111827;
+    }
+    textarea.field { min-height: 96px; resize: vertical; background: #fff; }
+    #system-select, #device-select, #position-select, #query-input { font-size: 1rem; font-weight: 700; background: #fff; }
+    .btn-primary {
+      width: 100%;
+      min-height: 48px;
+      margin-top: 16px;
+      border: 0;
+      border-radius: 8px;
+      background: #d0126b;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 800;
+    }
+    .btn-primary:hover { background: #b80f5d; }
+    .btn-tiny {
+      min-height: 36px;
+      margin-right: 6px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      font-weight: 700;
+    }
+    .btn-danger { color: #b91c1c; border-color: #fecaca; background: #fff1f2; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 40px;
+      margin: 0 8px 8px 0;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid #f3c1d6;
+      background: #fde8f1;
+      color: #9d1454;
+      font-weight: 800;
+    }
+    .model-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    #result-panel, #workspace, #search-panel {
+      background: #fff;
+      border: 1px solid #e6e8ee;
+      border-radius: 12px;
+    }
+    #search-panel { margin: 16px; padding: 20px; }
+    #right-panel { display: flex; flex-direction: column; gap: 16px; }
+    #result-panel, #workspace { padding: 8px 20px 20px; }
+    .step-card {
+      background: transparent;
+      border: 0;
+      border-bottom: 1px solid #f0f1f4;
+      border-radius: 0;
+      padding: 16px 0;
+      margin: 0;
+      box-shadow: none;
+    }
+    #result-empty.step-card, #manual-form.step-card, aside.step-card { border-bottom: 0; }
+    #manual-form.step-card, aside.step-card {
+      background: #fff;
+      border: 1px solid #e6e8ee;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .step-no {
+      width: 2rem;
+      height: 2rem;
+      flex: none;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: #d0126b;
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+    .step-kicker { margin: 0 0 4px; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.02em; color: #d0126b; }
+    .answer { margin: 0; font-size: 1.35rem; font-weight: 800; line-height: 1.35; word-break: break-word; }
+    .brief-list { margin: 0; padding: 0; list-style: none; }
+    .brief-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 1.2rem;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+    .brief-list li:last-child { border-bottom: 0; padding-bottom: 0; }
+    .brief-list.steps li { position: relative; padding-left: 1.15em; }
+    .brief-list.steps li::before {
+      content: "–";
+      position: absolute;
+      left: 0;
+      color: #d0126b;
+    }
+    .banner { margin-bottom: 12px; padding: 12px 14px; border-radius: 12px; font-weight: 700; }
+    .banner[data-type="error"] { background: #fee2e2; color: #991b1b; }
+    .banner[data-type="ok"] { background: #d1fae5; color: #065f46; }
+    .is-hidden { display: none !important; }
+    .panel { display: none; }
+    .panel.is-on { display: block; }
+    .tab-btn {
+      min-height: 40px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      color: #334155;
+      font-weight: 800;
+    }
+    .tab-btn[aria-selected="true"] { background: #fde8f1; color: #b01058; border-color: #f3c1d6; }
+    .data-table { width: 100%; border-collapse: collapse; background: #fff; }
+    .data-table th, .data-table td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: top; }
+    .data-table th { position: sticky; top: 0; background: #f8fafc; font-size: 0.75rem; color: #64748b; }
+    tr.is-current { background: #fde8f1; }
+    .form-grid { display: grid; gap: 12px; }
+    .source-badge, .match-badge {
+      display: inline-block;
+      margin-right: 6px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    #result-source[data-source="fallback"] { background: #ffedd5; color: #9a3412; }
+    #result-source[data-source="manual"] { background: #e0f2fe; color: #075985; }
+    #result-source[data-source="gemini"] { background: #d1fae5; color: #065f46; }
+    .match-badge { background: #fde8f1; color: #9d1454; }
+    .table-wrap { overflow: auto; border: 1px solid #e2e8f0; border-radius: 16px; background: #fff; -webkit-overflow-scrolling: touch; }
+    .safelist { display: none !important; }
+    #workspace { display: block; }
+    @media (min-width: 800px) {
+      .form-grid { grid-template-columns: 1fr 1fr; }
+      .span-2 { grid-column: 1 / -1; }
+    }
+    @media (max-width: 1023px) {
+      .answer { font-size: 1.4rem; }
+      .brief-list li { font-size: 1.25rem; }
+      .tab-btn { min-height: 44px; padding: 10px 16px; }
+      .btn-tiny { min-height: 44px; padding: 8px 12px; }
+      #workspace .field { max-width: none !important; }
+      .data-table { min-width: 680px; }
+    }
+    @media (min-width: 1024px) {
+      body { overflow: hidden; }
+      #shell {
+        height: 100vh;
+        display: grid;
+        grid-template-columns: 380px minmax(0, 1fr);
+        grid-template-rows: auto minmax(0, 1fr);
+        background: #f4f5f7;
+      }
+      #topbar { grid-column: 1 / -1; }
+      #search-panel, #right-panel { min-height: 0; }
+      #search-panel { overflow: auto; align-self: start; max-height: calc(100vh - 96px); margin: 16px 0 16px 16px; }
+      #right-panel { overflow: auto; display: flex; }
+      #result-panel { max-height: none; overflow: visible; }
+      #workspace { overflow: visible; }
+    }
+  </style>
+</head>
+<body class="font-sans antialiased">
+  <div id="shell">
+    <header id="topbar">
+      <div class="top-wrap">
+        <div>
+          <p class="brand-kicker">FIELD GUIDE</p>
+          <h1>버스단말기 현장 점검 가이드</h1>
+        </div>
+        <div class="text-right shrink-0">
+          <div id="status-pill" data-mode="manual">확인 중</div>
+          <p id="count-label" class="text-slate-400 text-xs mt-2"></p>
+        </div>
+      </div>
+    </header>
+
+    <section id="search-panel" aria-label="현장 증상 검색">
+      <p id="banner" class="banner is-hidden" data-type="error" role="alert"></p>
+
+      <form id="search-form">
+        <label class="lbl" for="system-select">기종</label>
+        <select id="system-select" class="field"></select>
+        <label class="lbl" for="device-select">단말기</label>
+        <select id="device-select" class="field"></select>
+        <div id="position-box" class="is-hidden">
+          <label class="lbl" for="position-select">승하차 위치</label>
+          <select id="position-select" class="field">
+            <option value="BOARD">승차 · 승하차단말기 1</option>
+            <option value="ALIGHT1">하차1 · 승하차단말기 2</option>
+            <option value="ALIGHT2">하차2 · 승하차단말기 3</option>
+          </select>
+        </div>
+        <p id="model-note" class="text-sm text-slate-600 mt-2 min-h-5"></p>
+
+        <label class="lbl" for="query-input">현장 증상</label>
+        <input id="query-input" class="field" maxlength="200" autocomplete="off" spellcheck="false" placeholder="하차2 통신불량" aria-label="현장 증상" />
+        <button id="search-btn" class="btn-primary" type="submit">확인하기</button>
+      </form>
+    </section>
+
+    <div id="right-panel">
+      <section id="result-panel" aria-live="polite">
+        <div id="result-empty" class="step-card">
+          <p class="text-sm font-extrabold text-slate-500">결과 대기</p>
+          <p class="text-2xl font-extrabold mt-2 leading-snug">증상을 입력해 주세요.</p>
+        </div>
+        <div id="result-body" class="is-hidden">
+          <div class="mb-3 flex flex-wrap items-center gap-2">
+            <span id="result-source" class="source-badge" data-source="manual"></span>
+            <span id="result-match" class="match-badge"></span>
+            <span id="result-time" class="text-xs text-slate-500"></span>
+          </div>
+          <p id="result-notice" class="text-sm font-bold mb-3" style="color:#9d1454"></p>
+          <div id="related-list" class="is-hidden mb-3"></div>
+
+          <article class="step-card step-cause">
+            <div class="flex gap-3">
+              <div class="step-no" aria-hidden="true">1</div>
+              <div>
+                <p class="step-kicker">예상 핵심 원인</p>
+                <div id="result-cause" class="answer"></div>
+              </div>
+            </div>
+          </article>
+          <article class="step-card step-inspect">
+            <div class="flex gap-3">
+              <div class="step-no" aria-hidden="true">2</div>
+              <div>
+                <p class="step-kicker">현장 점검 확인 및 조치</p>
+                <div id="result-inspection" class="answer inspect"></div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="workspace" aria-label="매뉴얼과 이력">
+        <div class="flex flex-wrap gap-2 mb-4" role="tablist">
+          <button class="tab-btn" type="button" data-tab="manuals" role="tab" aria-selected="true">매뉴얼 DB</button>
+          <button class="tab-btn" type="button" data-tab="history" role="tab" aria-selected="false">이력 검색</button>
+          <button class="tab-btn" type="button" data-tab="admin" role="tab" aria-selected="false">데이터 관리</button>
+        </div>
+
+        <div id="panel-manuals" class="panel is-on">
+          <div class="flex flex-wrap gap-2 mb-3">
+            <select id="manual-model" class="field" style="max-width: 280px" aria-label="매뉴얼 단말기 필터"></select>
+            <input id="manual-q" class="field" style="max-width: 320px" placeholder="코드, 증상, 키워드" aria-label="매뉴얼 검색" />
+          </div>
+          <div class="table-wrap">
+            <table class="data-table text-sm">
+              <thead>
+                <tr>
+                  <th>증상</th>
+                  <th>단말기</th>
+                  <th>제목</th>
+                  <th>키워드</th>
+                  <th>수정</th>
+                  <th>관리</th>
+                </tr>
+              </thead>
+              <tbody id="manual-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="panel-history" class="panel">
+          <div class="flex flex-wrap gap-2 mb-3">
+            <select id="history-model" class="field" style="max-width: 280px" aria-label="이력 단말기 필터"></select>
+            <input id="history-q" class="field" style="max-width: 320px" placeholder="입력어, 원인, 코드" aria-label="이력 검색" />
+          </div>
+          <p class="text-xs text-slate-500 mb-2">최근 100건입니다. 행을 누르면 그때의 안내를 다시 엽니다.</p>
+          <div class="table-wrap">
+            <table class="data-table text-sm">
+              <thead>
+                <tr>
+                  <th>시각</th>
+                  <th>기종 · 단말기</th>
+                  <th>입력</th>
+                  <th>원인</th>
+                  <th>출처</th>
+                </tr>
+              </thead>
+              <tbody id="history-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="panel-admin" class="panel">
+          <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_280px]">
+            <form id="manual-form" class="step-card">
+              <div class="flex items-center justify-between gap-3">
+                <h3 id="form-heading" class="text-lg font-extrabold">매뉴얼 추가</h3>
+                <button id="reset-form" class="btn-tiny" type="button">새로 입력</button>
+              </div>
+              <p id="form-banner" class="banner is-hidden mt-3" data-type="ok" role="status"></p>
+              <div class="form-grid">
+                <div>
+                  <label class="lbl" for="f-model">단말기</label>
+                  <select id="f-model" class="field" required></select>
+                </div>
+                <div>
+                  <label class="lbl" for="f-code">증상</label>
+                  <input id="f-code" class="field" maxlength="40" required placeholder="통신불량" />
+                </div>
+                <div class="span-2">
+                  <label class="lbl" for="f-title">제목</label>
+                  <input id="f-title" class="field" maxlength="120" required placeholder="교통카드 인식 실패" />
+                </div>
+                <div class="span-2">
+                  <label class="lbl" for="f-keywords">증상 키워드</label>
+                  <input id="f-keywords" class="field" maxlength="400" placeholder="카드, 안찍, 안테나" />
+                </div>
+                <div class="span-2">
+                  <label class="lbl" for="f-cause">① 예상 핵심 원인</label>
+                  <textarea id="f-cause" class="field" maxlength="2000" required></textarea>
+                </div>
+                <div class="span-2">
+                  <label class="lbl" for="f-inspection">② 점검 순서</label>
+                  <textarea id="f-inspection" class="field" maxlength="4000" required></textarea>
+                </div>
+                <div>
+                  <label class="lbl" for="f-old">분기 메모 1</label>
+                  <textarea id="f-old" class="field" maxlength="2000" placeholder="예: B800과 B700은 같은 승하차단말기"></textarea>
+                </div>
+                <div>
+                  <label class="lbl" for="f-new">분기 메모 2</label>
+                  <textarea id="f-new" class="field" maxlength="2000" placeholder="예: B710 승하차는 B650"></textarea>
+                </div>
+                <div class="span-2">
+                  <label class="lbl" for="f-action">③ 즉시 조치</label>
+                  <textarea id="f-action" class="field" maxlength="2000" required></textarea>
+                </div>
+              </div>
+              <button class="btn-primary" type="submit">저장</button>
+            </form>
+
+            <aside class="step-card h-fit">
+              <h3 class="text-lg font-extrabold">단말기</h3>
+              <p class="text-xs text-slate-500 mt-2">기종은 B800, B710, B700입니다. 통합·표출·LTE는 공통입니다. 승하차는 B800/B700이 같고 B710만 B650이며, 버스마다 승차·하차1·하차2로 1~3대가 달립니다.</p>
+              <form id="model-form" class="mt-3">
+                <label class="lbl" for="new-model-name">이름</label>
+                <input id="new-model-name" class="field" maxlength="80" placeholder="추가 단말기 이름" required />
+                <label class="lbl" for="new-model-note">구분 메모</label>
+                <textarea id="new-model-note" class="field" maxlength="400" placeholder="어느 기종에 쓰이는 단말기인지"></textarea>
+                <button class="btn-primary" type="submit">단말기 추가</button>
+              </form>
+              <ul id="model-list" class="mt-4"></ul>
+            </aside>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <template id="tpl-manual">
+    <tr>
+      <td data-field="code" class="font-mono font-extrabold whitespace-nowrap"></td>
+      <td data-field="model"></td>
+      <td data-field="title"></td>
+      <td data-field="keywords" class="text-slate-600"></td>
+      <td data-field="updated" class="whitespace-nowrap text-slate-500"></td>
+      <td class="whitespace-nowrap">
+        <button type="button" class="btn-tiny" data-action="edit">수정</button>
+        <button type="button" class="btn-tiny btn-danger" data-action="delete">삭제</button>
+      </td>
+    </tr>
+  </template>
+  <template id="tpl-history">
+    <tr>
+      <td data-field="time" class="whitespace-nowrap"></td>
+      <td data-field="model"></td>
+      <td data-field="query" class="font-bold"></td>
+      <td data-field="cause"></td>
+      <td data-field="source" class="whitespace-nowrap"></td>
+    </tr>
+  </template>
+  <div class="safelist" aria-hidden="true">
+    <span class="text-2xl text-xl text-lg text-sm text-xs font-extrabold font-bold text-slate-500 text-slate-600 text-amber-300 text-amber-800 whitespace-nowrap font-mono"></span>
+  </div>
+
+  <script>
+    const state = {
+      models: [],
+      systems: [],
+      manuals: [],
+      history: [],
+      status: null,
+      result: null,
+      editingId: null,
+    };
+
+    let historyTimer = 0;
+
+    const sourceLabel = {
+      gemini: "Gemini 요약",
+      manual: "내부 매뉴얼",
+      fallback: "일반 안내",
+    };
+
+    function $(id) {
+      return document.getElementById(id);
+    }
+
+    function human(error) {
+      if (!error || error.message === "Failed to fetch") {
+        return "서버에 연결하지 못했습니다. http://127.0.0.1:8000 으로 접속했는지 확인하세요.";
+      }
+      return error.message || "요청을 처리하지 못했습니다.";
+    }
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          ...(options.headers || {}),
+        },
+      });
+      if (response.status === 204) return null;
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        let detail = data.detail;
+        if (Array.isArray(detail)) {
+          detail = detail.map((item) => item.msg || "").join(" ");
+        }
+        throw new Error(detail || "요청을 처리하지 못했습니다.");
+      }
+      return data;
+    }
+
+    function showBanner(message, type = "error") {
+      const banner = $("banner");
+      banner.textContent = message;
+      banner.dataset.type = type;
+      banner.classList.remove("is-hidden");
+    }
+
+    function hideBanner() {
+      $("banner").classList.add("is-hidden");
+    }
+
+    function showFormBanner(message, type) {
+      const banner = $("form-banner");
+      banner.textContent = message;
+      banner.dataset.type = type;
+      banner.classList.remove("is-hidden");
+    }
+
+    function fillSelect(select, options) {
+      const includeAll = options.includeAll;
+      const current = select.value;
+      select.replaceChildren();
+      if (includeAll) {
+        const all = document.createElement("option");
+        all.value = "";
+        all.textContent = "전체 단말기";
+        select.appendChild(all);
+      }
+      state.models.forEach((model) => {
+        const option = document.createElement("option");
+        option.value = String(model.id);
+        option.textContent = model.name;
+        select.appendChild(option);
+      });
+      if (current && [...select.options].some((option) => option.value === current)) {
+        select.value = current;
+      }
+    }
+
+    function selectedSystem() {
+      return state.systems.find((item) => item.code === $("system-select").value) || null;
+    }
+
+    function selectedDevice() {
+      const code = $("device-select").value;
+      if (!code) return null;
+      const system = selectedSystem() || state.systems[0];
+      if (!system) return null;
+      return system.devices.find((item) => item.code === code) || null;
+    }
+
+    function currentModelId() {
+      const device = selectedDevice();
+      return device ? String(device.model_id) : "";
+    }
+
+    function isGateDevice() {
+      return selectedDevice()?.code === "GATE";
+    }
+
+    function togglePosition() {
+      $("position-box").classList.toggle("is-hidden", !isGateDevice());
+    }
+
+    function showModelNote() {
+      const system = selectedSystem();
+      const device = selectedDevice();
+      togglePosition();
+      if (!system && !device) {
+        $("model-note").textContent = "전체 기종, 전체 단말기에서 찾습니다. 필요할 때만 기종이나 단말기를 고르세요.";
+        return;
+      }
+      if (!system) {
+        $("model-note").textContent = "전체 기종에서 선택한 단말기를 찾습니다.";
+        return;
+      }
+      if (!device) {
+        $("model-note").textContent = `${system.note} 단말기는 전체입니다.`;
+        return;
+      }
+      $("model-note").textContent = `${system.note} ${device.hint}`;
+    }
+
+    function fillSystemSelect() {
+      const select = $("system-select");
+      const current = select.value;
+      select.replaceChildren();
+      const all = document.createElement("option");
+      all.value = "";
+      all.textContent = "전체";
+      select.appendChild(all);
+      state.systems.forEach((system) => {
+        const option = document.createElement("option");
+        option.value = system.code;
+        option.textContent = system.name;
+        select.appendChild(option);
+      });
+      if (current && [...select.options].some((option) => option.value === current)) {
+        select.value = current;
+      }
+    }
+
+    function fillDeviceSelect() {
+      const select = $("device-select");
+      const current = select.value;
+      const system = selectedSystem();
+      const devices = (system || state.systems[0] || { devices: [] }).devices;
+      select.replaceChildren();
+      const all = document.createElement("option");
+      all.value = "";
+      all.textContent = "전체";
+      select.appendChild(all);
+      devices.forEach((device) => {
+        const option = document.createElement("option");
+        option.value = device.code;
+        const gateLabel = system && device.model_code === "B650" ? "승하차단말기 · B650" : device.label;
+        option.textContent = gateLabel;
+        select.appendChild(option);
+      });
+      if (current && [...select.options].some((option) => option.value === current)) {
+        select.value = current;
+      }
+    }
+
+    function applyHistorySelection(item) {
+      if (item.system_code && state.systems.some((system) => system.code === item.system_code)) {
+        $("system-select").value = item.system_code;
+      }
+      fillDeviceSelect();
+      const system = selectedSystem();
+      const device = system && system.devices.find((entry) => entry.model_id === item.model_id);
+      if (device) $("device-select").value = device.code;
+      showModelNote();
+      if (item.position_code && isGateDevice()) $("position-select").value = item.position_code;
+    }
+
+    function renderStatus() {
+      const pill = $("status-pill");
+      if (!state.status) return;
+      pill.dataset.mode = state.status.gemini_enabled ? "gemini" : "manual";
+      pill.textContent = state.status.gemini_enabled ? "Gemini 사용 중" : "내부 매뉴얼 모드";
+      $("count-label").textContent = `매뉴얼 ${state.status.manual_count}건 · 단말기 ${state.status.model_count}개`;
+    }
+
+    function emptyRow(columns, message) {
+      const row = document.createElement("tr");
+      const cell = document.createElement("td");
+      cell.colSpan = columns;
+      cell.className = "empty-cell";
+      cell.textContent = message;
+      row.appendChild(cell);
+      return row;
+    }
+
+    function cloneRow(templateId) {
+      return $(templateId).content.firstElementChild.cloneNode(true);
+    }
+
+    function setField(row, name, value) {
+      const cell = row.querySelector(`[data-field="${name}"]`);
+      if (cell) cell.textContent = value || "";
+    }
+
+    function visibleManuals() {
+      const modelId = $("manual-model").value;
+      const keyword = $("manual-q").value.trim().toLowerCase();
+      return state.manuals.filter((manual) => {
+        if (modelId && String(manual.model_id) !== modelId) return false;
+        if (!keyword) return true;
+        const haystack = [manual.error_code, manual.title, manual.keywords, manual.cause, manual.action]
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(keyword);
+      });
+    }
+
+    function renderManuals() {
+      const body = $("manual-tbody");
+      body.replaceChildren();
+      const rows = visibleManuals();
+      if (!rows.length) {
+        body.appendChild(emptyRow(6, "표시할 매뉴얼이 없습니다."));
+        return;
+      }
+      rows.forEach((manual) => {
+        const row = cloneRow("tpl-manual");
+        row.dataset.id = String(manual.id);
+        if (state.result && state.result.manual_id === manual.id) row.classList.add("is-current");
+        setField(row, "code", manual.error_code);
+        setField(row, "model", manual.model_name);
+        setField(row, "title", manual.title);
+        setField(row, "keywords", manual.keywords);
+        setField(row, "updated", manual.updated_at);
+        body.appendChild(row);
+      });
+    }
+
+    function renderHistory() {
+      const body = $("history-tbody");
+      body.replaceChildren();
+      if (!state.history.length) {
+        body.appendChild(emptyRow(5, "진단 이력이 없습니다."));
+        return;
+      }
+      state.history.forEach((item) => {
+        const row = cloneRow("tpl-history");
+        row.dataset.id = String(item.id);
+        setField(row, "time", item.created_at);
+        setField(row, "model", item.model_name);
+        setField(row, "query", item.query);
+        setField(row, "cause", item.cause);
+        setField(row, "source", sourceLabel[item.source] || item.source);
+        body.appendChild(row);
+      });
+    }
+
+    function renderModelList() {
+      const list = $("model-list");
+      list.replaceChildren();
+      state.models.forEach((model) => {
+        const item = document.createElement("li");
+        item.className = "model-row";
+        const text = document.createElement("div");
+        const name = document.createElement("p");
+        name.className = "font-extrabold";
+        name.textContent = model.name;
+        const note = document.createElement("p");
+        note.className = "text-xs text-slate-500";
+        note.textContent = model.note || "";
+        text.append(name, note);
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "btn-tiny btn-danger";
+        button.textContent = "삭제";
+        button.addEventListener("click", () => deleteModel(model.id, model.name));
+        item.append(text, button);
+        list.appendChild(item);
+      });
+    }
+
+    function renderRelated(list) {
+      const box = $("related-list");
+      box.replaceChildren();
+      if (!list || list.length < 2) {
+        box.classList.add("is-hidden");
+        return;
+      }
+      box.classList.remove("is-hidden");
+      const label = document.createElement("p");
+      label.className = "text-sm font-extrabold text-slate-600 mb-2";
+      label.textContent = "다른 후보";
+      box.appendChild(label);
+      list.slice(1).forEach((item) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "chip";
+        const labelText = item.title && item.title !== item.error_code
+          ? `${item.title}`
+          : (item.title || item.error_code);
+        button.textContent = labelText;
+        button.addEventListener("click", () => {
+          $("query-input").value = item.title || item.error_code;
+          if ($("search-form").requestSubmit) $("search-form").requestSubmit();
+          else $("search-form").dispatchEvent(new Event("submit", { cancelable: true, bubbles: true }));
+        });
+        box.appendChild(button);
+      });
+    }
+
+    function fillAnswer(element, text, asSteps) {
+      const lines = String(text || "")
+        .split(/\n+/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .map((line) => (asSteps ? line.replace(/^\d+\s*[.)]\s*/, "") : line));
+      element.replaceChildren();
+      if (!asSteps && lines.length <= 1) {
+        element.textContent = lines[0] || "";
+        return;
+      }
+      const list = document.createElement("ul");
+      list.className = asSteps ? "brief-list steps" : "brief-list";
+      lines.forEach((line) => {
+        const item = document.createElement("li");
+        item.textContent = line;
+        list.appendChild(item);
+      });
+      element.appendChild(list);
+    }
+
+    function showResult(data) {
+      state.result = data;
+      $("result-empty").classList.add("is-hidden");
+      $("result-body").classList.remove("is-hidden");
+      fillAnswer($("result-cause"), data.cause);
+      fillAnswer($("result-inspection"), data.inspection, true);
+      const source = $("result-source");
+      source.dataset.source = data.source || "manual";
+      source.textContent = sourceLabel[data.source] || "안내";
+      const match = !data.matched_code
+        ? "일치하는 현장 항목 없음"
+        : data.matched_title && data.matched_title !== data.matched_code
+          ? `${data.matched_title}`
+          : data.matched_code;
+      $("result-match").textContent = data.position_label ? `${match} · ${data.position_label}` : match;
+      $("result-time").textContent = data.created_at || "";
+      $("result-notice").textContent = data.notice || "";
+      renderRelated(data.related || []);
+      renderManuals();
+    }
+
+    function setBusy(busy) {
+      const button = $("search-btn");
+      button.disabled = busy;
+      button.textContent = busy ? "확인 중..." : "확인하기";
+    }
+
+    function positionFromQuery(query) {
+      const compact = query.replace(/\s+/g, "");
+      if (compact.includes("하차2") || compact.includes("승하차단말기3") || compact.includes("단말기3")) return "ALIGHT2";
+      if (compact.includes("하차1") || compact.includes("승하차단말기2") || compact.includes("단말기2")) return "ALIGHT1";
+      if (compact.includes("승차") || compact.includes("승하차단말기1") || compact.includes("단말기1")) return "BOARD";
+      return "";
+    }
+
+    async function diagnose(event) {
+      event.preventDefault();
+      const query = $("query-input").value.trim();
+      const foundPosition = positionFromQuery(query);
+      if (foundPosition && $("device-select").value === "GATE") {
+        $("position-select").value = foundPosition;
+      }
+      const systemCode = $("system-select").value;
+      const deviceCode = $("device-select").value;
+      const positionCode = foundPosition || (isGateDevice() ? $("position-select").value : "");
+      if (isGateDevice() && !positionCode) return showBanner("승하차 위치를 선택하세요.");
+      if (!query) return showBanner("현장 증상을 입력하세요.");
+      hideBanner();
+      setBusy(true);
+      try {
+        const data = await api("/api/diagnose", {
+          method: "POST",
+          body: JSON.stringify({
+            model_id: 0,
+            query,
+            system_code: systemCode,
+            device_code: deviceCode,
+            position_code: positionCode,
+          }),
+        });
+        showResult(data);
+        await loadHistory();
+        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        $("result-panel").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+      } catch (error) {
+        showBanner(human(error));
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    function setTab(name) {
+      document.querySelectorAll(".tab-btn").forEach((button) => {
+        button.setAttribute("aria-selected", button.dataset.tab === name ? "true" : "false");
+      });
+      ["manuals", "history", "admin"].forEach((tab) => {
+        $("panel-" + tab).classList.toggle("is-on", tab === name);
+      });
+      if (window.matchMedia("(max-width: 1023px)").matches) {
+        $("workspace").scrollIntoView({ block: "start" });
+      }
+    }
+
+    function resetForm() {
+      state.editingId = null;
+      const keepModel = $("f-model").value;
+      $("manual-form").reset();
+      if (keepModel) $("f-model").value = keepModel;
+      $("form-heading").textContent = "매뉴얼 추가";
+    }
+
+    function startEdit(id) {
+      const manual = state.manuals.find((item) => item.id === id);
+      if (!manual) return;
+      state.editingId = id;
+      $("f-model").value = String(manual.model_id);
+      $("f-code").value = manual.error_code;
+      $("f-title").value = manual.title;
+      $("f-keywords").value = manual.keywords;
+      $("f-cause").value = manual.cause;
+      $("f-inspection").value = manual.inspection;
+      $("f-old").value = manual.old_branch;
+      $("f-new").value = manual.new_branch;
+      $("f-action").value = manual.action;
+      $("form-heading").textContent = `매뉴얼 수정 · ${manual.error_code}`;
+      setTab("admin");
+      $("manual-form").scrollIntoView({ block: "start" });
+    }
+
+    async function saveManual(event) {
+      event.preventDefault();
+      const payload = {
+        model_id: Number($("f-model").value),
+        error_code: $("f-code").value.trim(),
+        title: $("f-title").value.trim(),
+        keywords: $("f-keywords").value.trim(),
+        cause: $("f-cause").value.trim(),
+        inspection: $("f-inspection").value.trim(),
+        old_branch: $("f-old").value.trim(),
+        new_branch: $("f-new").value.trim(),
+        action: $("f-action").value.trim(),
+      };
+      const path = state.editingId ? `/api/manuals/${state.editingId}` : "/api/manuals";
+      const method = state.editingId ? "PUT" : "POST";
+      try {
+        await api(path, { method, body: JSON.stringify(payload) });
+        showFormBanner(state.editingId ? "매뉴얼을 수정했습니다." : "매뉴얼을 추가했습니다.", "ok");
+        resetForm();
+        await Promise.all([loadManuals(), loadStatus()]);
+      } catch (error) {
+        showFormBanner(human(error), "error");
+      }
+    }
+
+    async function deleteManual(id) {
+      const manual = state.manuals.find((item) => item.id === id);
+      const label = manual ? `${manual.error_code} ${manual.title}` : "이 매뉴얼";
+      if (!window.confirm(`${label}을 삭제할까요?`)) return;
+      try {
+        await api(`/api/manuals/${id}`, { method: "DELETE" });
+        if (state.editingId === id) resetForm();
+        await Promise.all([loadManuals(), loadStatus()]);
+        showBanner("매뉴얼을 삭제했습니다.", "ok");
+      } catch (error) {
+        showBanner(human(error));
+      }
+    }
+
+    async function saveModel(event) {
+      event.preventDefault();
+      try {
+        await api("/api/models", {
+          method: "POST",
+          body: JSON.stringify({
+            name: $("new-model-name").value.trim(),
+            note: $("new-model-note").value.trim(),
+          }),
+        });
+        $("model-form").reset();
+        await Promise.all([loadModels(), loadSystems(), loadStatus()]);
+        showFormBanner("단말기를 추가했습니다. 검색 화면 단말기 목록에도 반영했습니다.", "ok");
+      } catch (error) {
+        showFormBanner(human(error), "error");
+      }
+    }
+
+    async function deleteModel(id, name) {
+      if (!window.confirm(`${name}과 연결된 매뉴얼이 함께 삭제됩니다. 계속할까요?`)) return;
+      try {
+        await api(`/api/models/${id}`, { method: "DELETE" });
+        await Promise.all([loadModels(), loadSystems(), loadManuals(), loadStatus()]);
+        showBanner("단말기를 삭제했습니다.", "ok");
+      } catch (error) {
+        showBanner(human(error));
+      }
+    }
+
+    async function loadStatus() {
+      state.status = await api("/api/status");
+      renderStatus();
+    }
+
+    async function loadModels() {
+      state.models = await api("/api/models");
+      fillSelect($("manual-model"), { includeAll: true });
+      fillSelect($("history-model"), { includeAll: true });
+      fillSelect($("f-model"), {});
+      if (!$("f-model").value && state.models[0]) {
+        $("f-model").value = String(state.models[0].id);
+      }
+      renderModelList();
+    }
+
+    async function loadSystems() {
+      state.systems = await api("/api/systems");
+      fillSystemSelect();
+      fillDeviceSelect();
+      showModelNote();
+    }
+
+    async function loadManuals() {
+      state.manuals = await api("/api/manuals");
+      renderManuals();
+    }
+
+    async function loadHistory() {
+      const params = new URLSearchParams();
+      const modelId = $("history-model").value;
+      const keyword = $("history-q").value.trim();
+      if (modelId) params.set("model_id", modelId);
+      if (keyword) params.set("q", keyword);
+      state.history = await api("/api/history?" + params.toString());
+      renderHistory();
+    }
+
+    async function boot() {
+      try {
+        await loadStatus();
+        await loadModels();
+        await loadSystems();
+        await Promise.all([loadManuals(), loadHistory()]);
+      } catch (error) {
+        showBanner(human(error));
+      }
+    }
+
+    $("search-form").addEventListener("submit", diagnose);
+    $("system-select").addEventListener("change", () => {
+      fillDeviceSelect();
+      showModelNote();
+    });
+    $("device-select").addEventListener("change", () => {
+      showModelNote();
+    });
+    $("position-select").addEventListener("change", showModelNote);
+    $("manual-model").addEventListener("change", renderManuals);
+    $("manual-q").addEventListener("input", renderManuals);
+    $("history-model").addEventListener("change", loadHistory);
+    $("history-q").addEventListener("input", () => {
+      window.clearTimeout(historyTimer);
+      historyTimer = window.setTimeout(() => {
+        loadHistory().catch((error) => showBanner(human(error)));
+      }, 250);
+    });
+    $("manual-form").addEventListener("submit", saveManual);
+    $("reset-form").addEventListener("click", resetForm);
+    $("model-form").addEventListener("submit", saveModel);
+    $("manual-tbody").addEventListener("click", (event) => {
+      const button = event.target.closest("button");
+      const row = event.target.closest("tr[data-id]");
+      if (!button || !row) return;
+      const id = Number(row.dataset.id);
+      if (button.dataset.action === "edit") startEdit(id);
+      if (button.dataset.action === "delete") deleteManual(id);
+    });
+    $("history-tbody").addEventListener("click", (event) => {
+      const row = event.target.closest("tr[data-id]");
+      if (!row) return;
+      const item = state.history.find((history) => String(history.id) === row.dataset.id);
+      if (!item) return;
+      $("query-input").value = item.query;
+      applyHistorySelection(item);
+      showResult(item);
+    });
+    document.querySelectorAll(".tab-btn").forEach((button) => {
+      button.addEventListener("click", () => setTab(button.dataset.tab));
+    });
+    boot();
+  </script>
+</body>
+</html>
